@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>軟裝展示 Ultimate</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <!-- Lenis -->
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.6/bundled/lenis.min.js"></script>
+
+  <style>
+    body {
+      background: #f7f5f2;
+      overflow-x: hidden;
+    }
+
+    .section {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slider-wrap {
+      width: 80%;
+      overflow: hidden;
+      border-radius: 24px;
+      position: relative;
+    }
+
+    .track {
+      display: flex;
+    }
+
+    img {
+      width: 100%;
+      flex-shrink: 0;
+      user-select: none;
+      pointer-events: none;
+      will-change: transform;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Hero -->
+<section class="section">
+  <div class="text-center">
+    <h1 class="text-5xl mb-6 tracking-wide">奶油日系軟裝改造</h1>
+    <p class="text-gray-500">A方案 · 高質感生活</p>
+  </div>
+</section>
+
+<!-- Slider -->
+<section class="section">
+  <div class="slider-wrap">
+    <div class="track" id="track">
+
+      <!-- 🔥 10張圖片 -->
+      <img src="https://picsum.photos/id/1018/1200/700">
+      <img src="https://picsum.photos/id/1015/1200/700">
+      <img src="https://picsum.photos/id/1019/1200/700">
+      <img src="https://picsum.photos/id/1020/1200/700">
+      <img src="https://picsum.photos/id/1021/1200/700">
+      <img src="https://picsum.photos/id/1022/1200/700">
+      <img src="https://picsum.photos/id/1023/1200/700">
+      <img src="https://picsum.photos/id/1024/1200/700">
+      <img src="https://picsum.photos/id/1025/1200/700">
+      <img src="https://picsum.photos/id/1026/1200/700">
+
+    </div>
+  </div>
+</section>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// 🔥 Lenis 慣性滾動（高級調校）
+const lenis = new Lenis({
+  duration: 1.1,
+  smooth: true,
+  smoothTouch: true
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+
+// 🔥 核心 Slider Timeline（重點差異）
+const track = document.getElementById("track");
+const total = 10;
+
+// 👉 timeline 控制（比單一 gsap.to 更像原站）
+let tl = gsap.timeline({
+  scrollTrigger: {
+    trigger: ".slider-wrap",
+    start: "top center",
+    end: "+=4000",
+    scrub: 1.5,
+    pin: true,
+    anticipatePin: 1
+  }
+});
+
+// 👉 每張圖「一段動畫」→ 更細緻
+for (let i = 0; i < total; i++) {
+  tl.to(track, {
+    xPercent: -100 * i,
+    duration: 1,
+    ease: "power4.inOut"
+  });
+}
+
+
+// 🔥 視差 + scale（更像原站）
+gsap.utils.toArray("img").forEach((img) => {
+  gsap.fromTo(img,
+    { scale: 1.15 },
+    {
+      scale: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: img,
+        start: "left center",
+        end: "right center",
+        scrub: true
+      }
+    }
+  );
+});
+
+
+// 🔥 拖曳（桌機）
+let isDown = false;
+let startX;
+
+track.addEventListener("mousedown", (e) => {
+  isDown = true;
+  startX = e.pageX;
+});
+
+window.addEventListener("mouseup", () => isDown = false);
+
+window.addEventListener("mousemove", (e) => {
+  if (!isDown) return;
+
+  let diff = (startX - e.pageX) * 0.5;
+  lenis.scrollTo(lenis.scroll + diff);
+});
+
+
+// 🔥 手機滑動
+track.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+});
+
+track.addEventListener("touchmove", (e) => {
+  let diff = (startX - e.touches[0].clientX) * 0.6;
+  lenis.scrollTo(lenis.scroll + diff);
+});
+</script>
+
+</body>
+</html>
